@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Ribeye&display=swap');
+
+:root {
+    --cor-primaria-1: #31081F;
+    --cor-primaria-2: #AD343E;
+    --cor-primaria-3: #474747;
+    --cor-primaria-4: #F2AF29;
+    --cor-bg: #000000;
+
+    --cor-branco:#fff;
+    --cor-preto:#1d1d1d;
+    --cor-sombra:rgba(0, 0, 0, 0.15);
+    --cor-texto:#333;
+
+    --fonte: "Ribeye", serif;
+
+    --raio: 12px;
+    --transition:0.3s ease;
+    
+}
+*{
+    margin: 0;
+    padding:0;
+    box-sizing: border-box;
+}
+body{
+    font-family: var(--fonte);
+    background: #31081F;
+    background: linear-gradient(90deg,rgba(49, 8, 31, 1) 0%, rgba(173, 52, 62, 1) 50%, rgba(71, 71, 71, 1) 100%);
+}
