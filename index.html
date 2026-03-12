@@ -7,13 +7,19 @@
     <title>lista de compras</title>
 </head>
 <body>
-    <h2 class="titulo"> listinha de compras</h2>
+    <div class="container">
+        <h2 class="titulo"> listinha de compras</h2>
+        
+        <ul id="lista"></ul>
 
-    <button onclick="logout()">--Sair--</button>
-    <ul id="lista"></ul>
+        <input type="text" id="item" placeholder="Novo Item">
 
-    <input type="text" id="item" placeholder="Novo Item">
-    <button onclick="adicionarItem()">Adicionar</button>
-    <script type="module" src="app.js"></script>
+        <div class="botoes">
+            <button onclick="logout()">--Sair--</button>
+            <button onclick="adicionarItem()">Adicionar</button>
+        </div>
+
+        <script type="module" src="app.js"></script>
+    </div>
 </body>
 </html>
