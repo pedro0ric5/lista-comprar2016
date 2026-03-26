@@ -119,7 +119,7 @@ button[onclick="logout()"] {
     transition: var(--transition);
 }
 
-button[onclick="logout()"] :hover {
+button[onclick="logout()"]:hover {
     background-color: var(--cor-primaria-2);
 }
 #lista{
