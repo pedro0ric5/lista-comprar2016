@@ -98,23 +98,27 @@ button.hover {
     padding:0;
     box-sizing: border-box;
 }
-body{
-    font-family: var(--fonte);
-    background: #31081F;
-    background: linear-gradient(90deg,rgba(49, 8, 31, 1) 0%, rgba(173, 52, 62, 1) 50%, rgba(71, 71, 71, 1) 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-}
+
 #logo {
     width: 150px;
     height: auto;
     margin-bottom: 20px;
     border-radius: var(--raio);
 }
-.titulo {
-    font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
-    color: var(--cor-texto);
+
+button[onclick="logout()"] {
+    align-self: flex-end;
+    margin-bottom: 1.5rem;
+    background-color: var=(var(--cor-primaria-1));
+    color: var(--cor-primaria-4);
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--raio);
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+button[onclick="logout()"] :hover {
+    background-color: var(--cor-primaria-2);
 }
