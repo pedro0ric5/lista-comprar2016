@@ -122,3 +122,60 @@ button[onclick="logout()"] {
 button[onclick="logout()"] :hover {
     background-color: var(--cor-primaria-2);
 }
+#lista{
+    width:100%;
+    max-width: 600px;
+    list-style: none;
+    margin-bottom: 2rem;
+    padding: 0;
+}
+#lista li {
+    background-color: var(--cor-branco);
+    border: 1px solid var(--cor-texto);
+    border-radius: var(--raio);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px var(--cor-texto);
+}
+#lista button {
+    background-color: var(--cor-branco);
+    border: 1px solid var(--cor-texto);
+    border-radius: var(--raio);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+#item {
+    width:100%;
+    max-width: 400px;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--cor-texto);
+    border-radius: var(--raio);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+#item:focus {
+    border: 1px solid var(--cor-primaria-1);
+    outline: none;
+    box-shadow: 0 2px 6px var(--cor-texto);
+}
+button[onclick="adicionarItem()"]{
+    padding: 17px 20px;
+    background-color: var(--cor-primaria-1);
+    color: var(--cor-branco);
+    border: none;
+    border-radius: var(--raio);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+button[onclick="adicionarItem()"]{
+    background-color: var(--cor-primaria-2);
+}
