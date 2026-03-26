@@ -173,6 +173,7 @@ button[onclick="adicionarItem()"]{
     font-size: 1rem;
     font-weight: 500;
     transition: var(--transition);
+    box-shadow: 0 2px 6px var(--cor-texto);
 }
 button[onclick="adicionarItem()"]{
     background-color: var(--cor-primaria-2);
