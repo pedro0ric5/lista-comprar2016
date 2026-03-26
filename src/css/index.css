@@ -130,7 +130,7 @@ button[onclick="logout()"] :hover {
     padding: 0;
 }
 #lista li {
-    background-color: var(--cor-primaria-1);
+    background-color: var(--cor-branco);
     border: 1px solid var(--cor-texto);
     border-radius: var(--raio);
     padding: 6px 12px;
