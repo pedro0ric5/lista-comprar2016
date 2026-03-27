@@ -34,7 +34,7 @@ body{
 }
 
 .container{
-    background-color: var(--cor-branco);
+    background-color: #31081F;
     padding: clamp(2rem, 5vm, 3rem);
     border-radius: var(--raio);
     box-shadow: 0 8px 24px var(--cor-sombra);
@@ -93,21 +93,6 @@ button.hover {
     } 
 }
 
-*{
-    margin: 0;
-    padding:0;
-    box-sizing: border-box;
-}
-body{
-    font-family: var(--fonte);
-    background: #31081F;
-    background: linear-gradient(90deg,rgba(49, 8, 31, 1) 0%, rgba(173, 52, 62, 1) 50%, rgba(71, 71, 71, 1) 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-}
 #logo {
     width: 150px;
     height: auto;
