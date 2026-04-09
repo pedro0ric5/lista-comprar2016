@@ -104,7 +104,7 @@ button.hover {
     font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
     color: var(--cor-texto);
 }
-.logopindamonhangaba{
+#logo{
     display: flex;
     justify-content: center;
     align-items: center;
