@@ -104,3 +104,11 @@ button.hover {
     font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
     color: var(--cor-texto);
 }
+.logopindamonhangaba{
+    padding: clamp(3rem, 6vm, 4rem);
+    border-radius: var(--raio);
+    box-shadow: 0 8px 24px var(--cor-sombra);
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+}
