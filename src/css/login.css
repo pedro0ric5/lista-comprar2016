@@ -35,6 +35,7 @@ body{
 }
 
 .container{
+    position: relative;
     background-color: #31081F;
     padding: clamp(3rem, 6vm, 4rem);
     border-radius: var(--raio);
@@ -43,6 +44,17 @@ body{
     max-width: 480px;
     text-align: center;
 } 
+
+#logo {
+    position: absolute;
+    top: 20px;
+    right: 50px;
+    width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: var(--raio);
+}
+
 .titulo{
     font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
     color: var(--cor-primaria-4);
@@ -94,16 +106,11 @@ button.hover {
     } 
 }
 
-#logo {
-    width: 150px;
-    height: auto;
-    margin-bottom: 20px;
-    border-radius: var(--raio);
-}
 .titulo {
     font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
     color: var(--cor-texto);
 }
+
 #logo2{
     display: flex;
     justify-content: center;
