@@ -133,7 +133,7 @@ body {
     height: 100px;
     border-radius: 28px;
     box-shadow: 0 10px 30px var(--cor-sombra-forte);
-    background: var(--cor-branco);
+    background: var(--cor-bg-end);
     padding: 12px;
     transition: var(--transition);
     animation: fadeInDown 0.6s var(--easing-smooth);
@@ -219,16 +219,6 @@ body {
     opacity: 0.6;
     transition: var(--transition-rapida);
     pointer-events: none;
-}
-
-.email-icon::before {
-    content: "✉️";
-    font-size: 16px;
-}
-
-.password-icon::before {
-    content: "senha";
-    font-size: 16px;
 }
 
 input {
