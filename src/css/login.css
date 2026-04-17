@@ -227,7 +227,7 @@ body {
 }
 
 .password-icon::before {
-    content: "🔒";
+    content: "senha";
     font-size: 16px;
 }
 
@@ -299,13 +299,13 @@ input:focus {
 }
 
 .eye-icon::before {
-    content: "👁️";
+    content: "ver";
     font-size: 18px;
     opacity: 0.6;
 }
 
 .toggle-password.active .eye-icon::before {
-    content: "🙈";
+    content: "ocultar";
 }
 
 .options-row {
