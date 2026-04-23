@@ -14,7 +14,48 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Ribeye&display=swap" rel="stylesheet">
 </head>
 <body>
-<script type="module" src="app.js"></script>
+    <div class="app-wrapper">
+        <!-- Logo externa -->
+        <div class="logo-outer">
+            <img id="logo" src="src/icons/icon-512x512.png" alt="Lista 2016">
+        </div>
+
+        <div class="container">
+            <div class="header-actions">
+                <h2 class="titulo">Minha Lista</h2>
+                <div class="header-buttons">
+                    <button onclick="removerTodosItens()" class="btn-clear-all" aria-label="Remover todos os itens" title="Limpar lista completa">
+                        <span>Limpar tudo</span>
+                    </button>
+                    <button onclick="logout()" class="btn-logout" aria-label="Sair">
+                        <span>Sair</span>
+                    </button>
+                </div>
+            </div>
+
+            <ul id="lista" class="shopping-list"></ul>
+
+            <div class="add-item-area">
+                <input 
+                    type="text" 
+                    id="item" 
+                    placeholder="Digite um novo item..." 
+                    autocomplete="off"
+                    aria-label="Novo item"
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="adicionarItem()" class="btn-add" aria-label="Adicionar item">
+                    <span class="add-icon">+</span>
+                    Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="app.js"></script>
 <script>
     // Variáveis globais
     let dragSrcElement = null;
