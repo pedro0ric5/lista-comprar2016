@@ -28,41 +28,41 @@ async function carregarLista() {
 }
 
 // Adiciona novo item Ã  lista de compras
-window.adicionarItem = async function () {
-  const user = await getUser()
-  console.log('UsuÃ¡rio:', user)
-  console.log('Item:', input.value)
-
-  const { error } = await supabase.from('lista_compras').insert({
-    item: input.value,
-    adicionado_por: user.id // Certifique-se que a coluna existe e Ã© do tipo uuid
-  })
-
-  if (error) return alert('Erro ao adicionar: ' + error.message)
-
-  input.value = ''
-  carregarLista()
-}
-
-// Remove item da lista pelo ID
-window.removerItem = async function (id) {
-  const { error } = await supabase.from('lista_compras').delete().eq('id', id)
-  if (error) return alert('Erro ao remover: ' + error.message)
-  carregarLista()
-}
-
-// Realiza logout do usuÃ¡rio
-window.logout = async function () {
-  await supabase.auth.signOut()
-  window.location.href = 'login.html'
-}
-
-// Inicializa: verifica se o usuÃ¡rio estÃ¡ logado e carrega a lista
-getUser().then(carregarLista)
-
-// enter funciona para adicionar item
-document.addEventListener('keydown', function (event) {
-  if (event.key === 'Enter') {
-      adicionarItem()
- }
-})
+window.adicionarItem = function() {
+    const input = document.getElementById('item');
+    const texto = input.value.trim();
+    
+    if (texto === '') {
+        showToast('Digite um item antes de adicionar!', 'error');
+        return;
+    }
+    
+    const lista = document.getElementById('lista');
+    const li = document.createElement('li');
+    const itemId = Date.now().toString();
+    li.setAttribute('data-id', itemId);
+    li.setAttribute('draggable', 'true');
+    
+    li.innerHTML = `
+        <label class="item-checkbox">
+            <input type="checkbox" onchange="toggleItem(this, '${escapeHtml(texto)}')">
+            <span class="checkmark"></span>
+        </label>
+        <span class="item-text" onclick="toggleItemFromText(this)">${escapeHtml(texto)}</span>
+        <button class="delete-btn" onclick="removerItem(this)" aria-label="Remover item">
+            <span class="delete-icon">🗑️</span>
+        </button>
+    `;
+    
+    lista.appendChild(li);
+    input.value = '';
+    
+    adicionarEventosDragDrop(li);
+    
+    // CORREÇÃO: Salva TODOS os itens (incluindo os existentes)
+    salvarListaNoStorage();  // Esta linha está correta, o problema está na função abaixo
+    
+    atualizarEstatisticas();
+    showToast('Item adicionado com sucesso!', 'success');
+    li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
