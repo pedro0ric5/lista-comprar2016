@@ -1,433 +1,377 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#4A0D2E">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="src/css/index.css">
-    <link rel="shortcut icon" href="src/icons/favicon.ico" type="image/x-icon">
-    <title>Lista 2016 | Minha Lista</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Ribeye&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="app-wrapper">
-        <!-- Logo externa -->
-        <div class="logo-outer">
-            <img id="logo" src="src/icons/icon-512x512.png" alt="Lista 2016">
-        </div>
+<script type="module" src="app.js"></script>
+<script>
+    // Variáveis globais
+    let dragSrcElement = null;
+    let touchStartX = null;
+    let touchStartY = null;
+    let currentItemId = null;
 
-        <div class="container">
-            <div class="header-actions">
-                <h2 class="titulo">Minha Lista</h2>
-                <div class="header-buttons">
-                    <button onclick="removerTodosItens()" class="btn-clear-all" aria-label="Remover todos os itens" title="Limpar lista completa">
-                        <span>Limpar tudo</span>
-                    </button>
-                    <button onclick="logout()" class="btn-logout" aria-label="Sair">
-                        <span class="logout-icon">SAIR</span>
-                        <span>Sair</span>
-                    </button>
-                </div>
-            </div>
+    // Função para mostrar notificações toast
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast show ${type}`;
+        
+        setTimeout(() => {
+            toast.className = 'toast';
+        }, 3000);
+    }
 
-            <ul id="lista" class="shopping-list"></ul>
+    // Função para escapar HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
-            <div class="add-item-area">
-                <input 
-                    type="text" 
-                    id="item" 
-                    placeholder="Digite um novo item..." 
-                    autocomplete="off"
-                    aria-label="Novo item"
-                    onkeypress="handleKeyPress(event)"
-                >
-                <button onclick="adicionarItem()" class="btn-add" aria-label="Adicionar item">
-                    <span class="add-icon">+</span>
-                    Adicionar
+    // FUNÇÃO CORRIGIDA: Salvar lista completa no localStorage
+    function salvarListaNoStorage() {
+        const lista = document.getElementById('lista');
+        const itens = lista.querySelectorAll('li');
+        const itensData = [];
+        
+        itens.forEach(item => {
+            const texto = item.querySelector('.item-text').textContent;
+            const checked = item.querySelector('input[type="checkbox"]').checked;
+            const id = item.dataset.id || Date.now().toString();
+            if (!item.dataset.id) {
+                item.dataset.id = id;
+            }
+            itensData.push({ texto, checked, id });
+        });
+        
+        localStorage.setItem('listaCompras', JSON.stringify(itensData));
+    }
+
+    // FUNÇÃO CORRIGIDA: Carregar lista do localStorage
+    function carregarListaDoStorage() {
+        const saved = localStorage.getItem('listaCompras');
+        if (!saved) return;
+        
+        const itensData = JSON.parse(saved);
+        const lista = document.getElementById('lista');
+        
+        if (lista.children.length > 0 && itensData.length > 0) {
+            return;
+        }
+        
+        lista.innerHTML = '';
+        
+        itensData.forEach(item => {
+            const li = document.createElement('li');
+            li.setAttribute('data-id', item.id || Date.now().toString());
+            li.setAttribute('draggable', 'true');
+            
+            li.innerHTML = `
+                <label class="item-checkbox">
+                    <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(this, '${escapeHtml(item.texto)}')">
+                    <span class="checkmark"></span>
+                </label>
+                <span class="item-text ${item.checked ? 'checked' : ''}" onclick="toggleItemFromText(this)">${escapeHtml(item.texto)}</span>
+                <button class="delete-btn" onclick="removerItem(this)" aria-label="Remover item">
+                    <span class="delete-icon">🗑️</span>
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
-
-    <script type="module" src="app.js"></script>
-    <script>
-        // Variáveis globais
-        let dragSrcElement = null;
-        let touchStartX = null;
-        let touchStartY = null;
-        let currentItemId = null;
-
-        // Função para mostrar notificações toast
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
+            `;
             
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3000);
-        }
-
-        // Função para atualizar estatísticas
-        function atualizarEstatisticas() {
-            const lista = document.getElementById('lista');
-            const itens = lista.querySelectorAll('li');
-            const total = itens.length;
-            
-            let comprados = 0;
-            itens.forEach(item => {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                if (checkbox && checkbox.checked) {
-                    comprados++;
-                }
-            });
-            
-            const percent = total > 0 ? Math.round((comprados / total) * 100) : 0;
-            
-            document.getElementById('totalItems').textContent = total;
-            document.getElementById('checkedItems').textContent = comprados;
-            document.getElementById('percentComplete').textContent = percent;
-        }
-
-        // Função para salvar a ordem no localStorage
-        function salvarListaNoStorage() {
-    const lista = document.getElementById('lista');
-    const itens = lista.querySelectorAll('li');
-    const itensData = [];
-    
-    itens.forEach(item => {
-        const texto = item.querySelector('.item-text').textContent;
-        const checked = item.querySelector('input[type="checkbox"]').checked;
-        const id = item.dataset.id || Date.now().toString();
-        if (!item.dataset.id) {
-            item.dataset.id = id;
-        }
-        itensData.push({ texto, checked, id });
-    });
-    
-    localStorage.setItem('listaCompras', JSON.stringify(itensData));
-    console.log('Salvo:', itensData); // Para debug
-}
-        // Função para adicionar item (deve ser chamada pelo app.js também)
-        window.toggleItem = function(checkbox, texto) {
-    const itemText = checkbox.closest('li').querySelector('.item-text');
-    if (checkbox.checked) {
-        itemText.classList.add('checked');
-        showToast(`✅ ${texto} foi marcado como comprado!`, 'success');
-    } else {
-        itemText.classList.remove('checked');
-        showToast(`🔄 ${texto} foi desmarcado`, 'info');
+            lista.appendChild(li);
+            adicionarEventosDragDrop(li);
+        });
+        
+        atualizarEstatisticas();
     }
-    salvarListaNoStorage();  // CORREÇÃO: Salvar após toggle
-    atualizarEstatisticas();
-};
-            
-            // Scroll suave para o novo item
-            li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        };
 
-        // Função para escapar HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+    // FUNÇÃO CORRIGIDA: Adicionar item
+    window.adicionarItem = function() {
+        const input = document.getElementById('item');
+        const texto = input.value.trim();
+        
+        if (texto === '') {
+            showToast('Digite um item antes de adicionar!', 'error');
+            return;
         }
-
-        // Função para remover item individual
-       function carregarListaDoStorage() {
-    const saved = localStorage.getItem('listaCompras');
-    if (!saved) return;
-    
-    const itensData = JSON.parse(saved);
-    const lista = document.getElementById('lista');
-    
-    // CORREÇÃO: Não limpar se já tem itens (evita conflito)
-    // Verifica se a lista já está populada para não duplicar
-    if (lista.children.length > 0 && itensData.length > 0) {
-        console.log('Lista já carregada, evitando duplicação');
-        return;
-    }
-    
-    lista.innerHTML = '';
-    
-    itensData.forEach(item => {
+        
+        const lista = document.getElementById('lista');
         const li = document.createElement('li');
-        li.setAttribute('data-id', item.id || Date.now().toString());
+        const itemId = Date.now().toString();
+        li.setAttribute('data-id', itemId);
         li.setAttribute('draggable', 'true');
         
         li.innerHTML = `
             <label class="item-checkbox">
-                <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(this, '${escapeHtml(item.texto)}')">
+                <input type="checkbox" onchange="toggleItem(this, '${escapeHtml(texto)}')">
                 <span class="checkmark"></span>
             </label>
-            <span class="item-text ${item.checked ? 'checked' : ''}" onclick="toggleItemFromText(this)">${escapeHtml(item.texto)}</span>
+            <span class="item-text" onclick="toggleItemFromText(this)">${escapeHtml(texto)}</span>
             <button class="delete-btn" onclick="removerItem(this)" aria-label="Remover item">
                 <span class="delete-icon">🗑️</span>
             </button>
         `;
         
         lista.appendChild(li);
+        input.value = '';
+        
         adicionarEventosDragDrop(li);
-    });
-    
-    atualizarEstatisticas();
-}
-
-        // Função para remover todos os itens
-        window.removerTodosItens = function() {
-    const lista = document.getElementById('lista');
-    const total = lista.children.length;
-    
-    if (total === 0) {
-        showToast('Sua lista já está vazia!', 'info');
-        return;
-    }
-    
-    if (confirm(`Tem certeza que deseja remover TODOS os ${total} itens da sua lista?`)) {
-        lista.innerHTML = '';
-        salvarListaNoStorage();  // CORREÇÃO: Salvar lista vazia
+        salvarListaNoStorage();
         atualizarEstatisticas();
-        showToast(`${total} item(ns) removido(s) com sucesso`, 'warning');
-    }
-};
+        showToast('Item adicionado com sucesso!', 'success');
+        li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
 
-        // Função para alternar item via checkbox
-        window.toggleItem = function(checkbox, texto) {
-            const itemText = checkbox.closest('li').querySelector('.item-text');
-            if (checkbox.checked) {
-                itemText.classList.add('checked');
-                showToast(`✅ ${texto} foi marcado como comprado!`, 'success');
-            } else {
-                itemText.classList.remove('checked');
-                showToast(`🔄 ${texto} foi desmarcado`, 'info');
-            }
+    // FUNÇÃO CORRIGIDA: Remover item individual
+    window.removerItem = function(btn) {
+        const li = btn.closest('li');
+        const texto = li.querySelector('.item-text').textContent;
+        
+        if (confirm(`Remover "${texto}" da lista?`)) {
+            li.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                li.remove();
+                salvarListaNoStorage();
+                atualizarEstatisticas();
+                showToast(`"${texto}" foi removido`, 'info');
+            }, 150);
+        }
+    };
+
+    // FUNÇÃO CORRIGIDA: Remover todos os itens
+    window.removerTodosItens = function() {
+        const lista = document.getElementById('lista');
+        const total = lista.children.length;
+        
+        if (total === 0) {
+            showToast('Sua lista já está vazia!', 'info');
+            return;
+        }
+        
+        if (confirm(`Tem certeza que deseja remover TODOS os ${total} itens da sua lista?`)) {
+            lista.innerHTML = '';
             salvarListaNoStorage();
             atualizarEstatisticas();
-        };
-
-        // Função para alternar via clique no texto
-        window.toggleItemFromText = function(textElement) {
-            const checkbox = textElement.closest('li').querySelector('input[type="checkbox"]');
-            checkbox.checked = !checkbox.checked;
-            const evento = new Event('change');
-            checkbox.dispatchEvent(evento);
-        };
-
-        // Eventos de Drag & Drop
-        function adicionarEventosDragDrop(elemento) {
-            elemento.addEventListener('dragstart', handleDragStart);
-            elemento.addEventListener('dragend', handleDragEnd);
-            elemento.addEventListener('dragover', handleDragOver);
-            elemento.addEventListener('dragenter', handleDragEnter);
-            elemento.addEventListener('dragleave', handleDragLeave);
-            elemento.addEventListener('drop', handleDrop);
+            showToast(`${total} item(ns) removido(s) com sucesso`, 'warning');
         }
+    };
 
-        function handleDragStart(e) {
-            dragSrcElement = this;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', this.innerHTML);
-            this.classList.add('dragging');
+    // FUNÇÃO CORRIGIDA: Alternar item via checkbox
+    window.toggleItem = function(checkbox, texto) {
+        const itemText = checkbox.closest('li').querySelector('.item-text');
+        if (checkbox.checked) {
+            itemText.classList.add('checked');
+            showToast(`✅ ${texto} foi marcado como comprado!`, 'success');
+        } else {
+            itemText.classList.remove('checked');
+            showToast(`🔄 ${texto} foi desmarcado`, 'info');
         }
+        salvarListaNoStorage();
+        atualizarEstatisticas();
+    };
 
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            const items = document.querySelectorAll('#lista li');
-            items.forEach(item => {
-                item.classList.remove('drag-over');
-            });
-            salvarOrdem();
+    // Função para alternar via clique no texto
+    window.toggleItemFromText = function(textElement) {
+        const checkbox = textElement.closest('li').querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        const evento = new Event('change');
+        checkbox.dispatchEvent(evento);
+    };
+
+    // Função para atualizar estatísticas
+    function atualizarEstatisticas() {
+        const lista = document.getElementById('lista');
+        const itens = lista.querySelectorAll('li');
+        const total = itens.length;
+        
+        let comprados = 0;
+        itens.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.checked) {
+                comprados++;
+            }
+        });
+        
+        const percent = total > 0 ? Math.round((comprados / total) * 100) : 0;
+        
+        // Criar elementos de estatísticas se não existirem
+        let totalEl = document.getElementById('totalItems');
+        let checkedEl = document.getElementById('checkedItems');
+        let percentEl = document.getElementById('percentComplete');
+        
+        if (!totalEl) {
+            const statsBar = document.querySelector('.stats-bar');
+            if (!statsBar) {
+                const container = document.querySelector('.container');
+                const newStatsBar = document.createElement('div');
+                newStatsBar.className = 'stats-bar';
+                newStatsBar.innerHTML = `
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalItems">0</span>
+                        <span class="stat-label">itens</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="checkedItems">0</span>
+                        <span class="stat-label">comprados</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="percentComplete">0</span>
+                        <span class="stat-label">% completo</span>
+                    </div>
+                `;
+                container.insertBefore(newStatsBar, document.getElementById('lista'));
+            }
+        }
+        
+        totalEl = document.getElementById('totalItems');
+        checkedEl = document.getElementById('checkedItems');
+        percentEl = document.getElementById('percentComplete');
+        
+        if (totalEl) totalEl.textContent = total;
+        if (checkedEl) checkedEl.textContent = comprados;
+        if (percentEl) percentEl.textContent = percent;
+    }
+
+    // Eventos de Drag & Drop
+    function adicionarEventosDragDrop(elemento) {
+        elemento.addEventListener('dragstart', handleDragStart);
+        elemento.addEventListener('dragend', handleDragEnd);
+        elemento.addEventListener('dragover', handleDragOver);
+        elemento.addEventListener('dragenter', handleDragEnter);
+        elemento.addEventListener('dragleave', handleDragLeave);
+        elemento.addEventListener('drop', handleDrop);
+    }
+
+    function handleDragStart(e) {
+        dragSrcElement = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+        this.classList.add('dragging');
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        const items = document.querySelectorAll('#lista li');
+        items.forEach(item => {
+            item.classList.remove('drag-over');
+        });
+        salvarListaNoStorage();
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    function handleDragEnter(e) {
+        this.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+        this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        
+        if (dragSrcElement !== this) {
+            const parent = this.parentNode;
+            const children = Array.from(parent.children);
+            const dragIndex = children.indexOf(dragSrcElement);
+            const targetIndex = children.indexOf(this);
+            
+            if (dragIndex < targetIndex) {
+                this.parentNode.insertBefore(dragSrcElement, this.nextSibling);
+            } else {
+                this.parentNode.insertBefore(dragSrcElement, this);
+            }
+            
             salvarListaNoStorage();
         }
+        
+        this.classList.remove('drag-over');
+        return false;
+    }
 
-        function handleDragOver(e) {
-            if (e.preventDefault) {
+    // Swipe em mobile para deletar
+    function initSwipeEvents() {
+        const lista = document.getElementById('lista');
+        
+        lista.addEventListener('touchstart', function(e) {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            currentItemId = e.target.closest('li');
+        });
+        
+        lista.addEventListener('touchmove', function(e) {
+            if (!touchStartX || !currentItemId) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
                 e.preventDefault();
-            }
-            e.dataTransfer.dropEffect = 'move';
-            return false;
-        }
-
-        function handleDragEnter(e) {
-            this.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            this.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
-            
-            if (dragSrcElement !== this) {
-                const parent = this.parentNode;
-                const children = Array.from(parent.children);
-                const dragIndex = children.indexOf(dragSrcElement);
-                const targetIndex = children.indexOf(this);
-                
-                if (dragIndex < targetIndex) {
-                    this.parentNode.insertBefore(dragSrcElement, this.nextSibling);
+                if (deltaX > 0) {
+                    currentItemId.style.transform = 'translateX(10px)';
                 } else {
-                    this.parentNode.insertBefore(dragSrcElement, this);
+                    currentItemId.style.transform = 'translateX(-10px)';
                 }
-                
-                salvarOrdem();
-                salvarListaNoStorage();
+            }
+        });
+        
+        lista.addEventListener('touchend', function(e) {
+            if (!touchStartX || !currentItemId) return;
+            
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - touchStartX;
+            
+            if (Math.abs(deltaX) > 100) {
+                currentItemId.style.transform = 'translateX(0)';
+                const deleteBtn = currentItemId.querySelector('.delete-btn');
+                if (deleteBtn) {
+                    deleteBtn.click();
+                }
+            } else {
+                currentItemId.style.transform = 'translateX(0)';
             }
             
-            this.classList.remove('drag-over');
-            return false;
-        }
-
-        // Swipe em mobile para deletar
-        function initSwipeEvents() {
-            const lista = document.getElementById('lista');
-            
-            lista.addEventListener('touchstart', function(e) {
-                const touch = e.touches[0];
-                touchStartX = touch.clientX;
-                touchStartY = touch.clientY;
-                currentItemId = e.target.closest('li');
-            });
-            
-            lista.addEventListener('touchmove', function(e) {
-                if (!touchStartX || !currentItemId) return;
-                
-                const touch = e.touches[0];
-                const deltaX = touch.clientX - touchStartX;
-                const deltaY = touch.clientY - touchStartY;
-                
-                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-                    e.preventDefault();
-                    if (deltaX > 0) {
-                        currentItemId.style.transform = 'translateX(10px)';
-                    } else {
-                        currentItemId.style.transform = 'translateX(-10px)';
-                    }
-                }
-            });
-            
-            lista.addEventListener('touchend', function(e) {
-                if (!touchStartX || !currentItemId) return;
-                
-                const touch = e.changedTouches[0];
-                const deltaX = touch.clientX - touchStartX;
-                
-                if (Math.abs(deltaX) > 100) {
-                    currentItemId.style.transform = 'translateX(0)';
-                    const deleteBtn = currentItemId.querySelector('.delete-btn');
-                    if (deleteBtn) {
-                        deleteBtn.click();
-                    }
-                } else {
-                    currentItemId.style.transform = 'translateX(0)';
-                }
-                
-                touchStartX = null;
-                touchStartY = null;
-                currentItemId = null;
-            });
-        }
-
-        // Tecla Enter para adicionar
-        window.handleKeyPress = function(e) {
-            if (e.key === 'Enter') {
-                adicionarItem();
-            }
-        };
-
-        // Salvar lista completa no localStorage
-        function salvarListaNoStorage() {
-            const lista = document.getElementById('lista');
-            const itens = lista.querySelectorAll('li');
-            const itensData = [];
-            
-            itens.forEach(item => {
-                const texto = item.querySelector('.item-text').textContent;
-                const checked = item.querySelector('input[type="checkbox"]').checked;
-                itensData.push({ texto, checked, id: item.dataset.id });
-            });
-            
-            localStorage.setItem('listaCompras', JSON.stringify(itensData));
-        }
-
-        // Carregar lista do localStorage
-        function carregarListaDoStorage() {
-    const saved = localStorage.getItem('listaCompras');
-    if (!saved) return;
-    
-    const itensData = JSON.parse(saved);
-    const lista = document.getElementById('lista');
-    
-    // CORREÇÃO: Não limpar se já tem itens (evita conflito)
-    // Verifica se a lista já está populada para não duplicar
-    if (lista.children.length > 0 && itensData.length > 0) {
-        console.log('Lista já carregada, evitando duplicação');
-        return;
+            touchStartX = null;
+            touchStartY = null;
+            currentItemId = null;
+        });
     }
-    
-    lista.innerHTML = '';
-    
-    itensData.forEach(item => {
-        const li = document.createElement('li');
-        li.setAttribute('data-id', item.id || Date.now().toString());
-        li.setAttribute('draggable', 'true');
-        
-        li.innerHTML = `
-            <label class="item-checkbox">
-                <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(this, '${escapeHtml(item.texto)}')">
-                <span class="checkmark"></span>
-            </label>
-            <span class="item-text ${item.checked ? 'checked' : ''}" onclick="toggleItemFromText(this)">${escapeHtml(item.texto)}</span>
-            <button class="delete-btn" onclick="removerItem(this)" aria-label="Remover item">
-                <span class="delete-icon">🗑️</span>
-            </button>
-        `;
-        
-        lista.appendChild(li);
-        adicionarEventosDragDrop(li);
+
+    // Tecla Enter para adicionar
+    window.handleKeyPress = function(e) {
+        if (e.key === 'Enter') {
+            adicionarItem();
+        }
+    };
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+        const lista = document.getElementById('lista');
+        if (lista.children.length === 0) {
+            carregarListaDoStorage();
+        }
+        initSwipeEvents();
+        atualizarEstatisticas();
     });
-    
-    atualizarEstatisticas();
-}
 
-        // Inicialização
-       document.addEventListener('DOMContentLoaded', () => {
-    // CORREÇÃO: Só carrega se a lista estiver vazia
-    const lista = document.getElementById('lista');
-    if (lista.children.length === 0) {
-        carregarListaDoStorage();
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registrado com sucesso:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Falha ao registrar o ServiceWorker:', error);
+                });
+        });
     }
-    initSwipeEvents();
-    atualizarEstatisticas();
-});
-
-        // Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registrado com sucesso:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('Falha ao registrar o ServiceWorker:', error);
-                    });
-            });
-        }
-
-        // Exportar funções para escopo global (para o app.js)
-        window.salvarListaNoStorage = salvarListaNoStorage;
-        window.atualizarEstatisticas = atualizarEstatisticas;
-        window.showToast = showToast;
-    </script>
-</body>
-</html>
+</script>
